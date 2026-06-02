@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ảnh Gạch Master</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  ::-webkit-scrollbar{width:0;}
+  body{
+    min-height:100vh;
+    background:#F8F9FA;
+    font-family:'Nunito','Be Vietnam Pro',sans-serif;
+    max-width:480px;
+    margin:0 auto;
+    position:relative;
+    overflow-x:hidden;
+  }
+  .img-card{transition:transform .15s;}
+  .img-card:active{transform:scale(.96);}
+  .btn-ripple{position:relative;overflow:hidden;}
+  .btn-ripple:active{opacity:.85;transform:scale(.97);}
+  .album-btn{transition:all .2s cubic-bezier(.34,1.56,.64,1);}
+  .album-btn:active{transform:scale(.95);}
+  @keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .slide-up{animation:slideUp .35s cubic-bezier(.34,1.56,.64,1) both;}
+  .fade-in{animation:fadeIn .2s ease both;}
+  .spinner{width:36px;height:36px;border:3px solid #e0e0e0;border-top-color:#1a237e;border-radius:50%;animation:spin 1s linear infinite;}
+
+  /* ── HOME ── */
+  #screen-home{padding-bottom:32px;}
+  .home-header{
+    background:linear-gradient(135deg,#1a237e 0%,#283593 60%,#3949ab 100%);
+    padding:52px 24px 32px;
+    position:relative;overflow:hidden;
+  }
+  .home-header .circle1{position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:rgba(255,255,255,.06);border-radius:50%;}
+  .home-header .circle2{position:absolute;bottom:-20px;left:20px;width:80px;height:80px;background:rgba(255,255,255,.04);border-radius:50%;}
+  .home-header .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;
+    font-size:11px;color:rgba(255,255,255,.85);font-weight:600;letter-spacing:1px;margin-bottom:12px;
+  }
+  .home-header h1{font-size:26px;font-weight:800;color:#fff;line-height:1.2;}
+  .home-header p{font-size:14px;color:rgba(255,255,255,.65);margin-top:4px;font-weight:500;}
+  .album-grid{padding:20px 16px;display:grid;gap:12px;}
+  .album-btn{
+    display:flex;align-items:center;gap:16px;
+    background:#fff;border:none;border-radius:18px;
+    padding:16px 20px;cursor:pointer;
+    box-shadow:0 2px 12px rgba(0,0,0,.06);text-align:left;width:100%;
+  }
+  .album-icon{
+    width:52px;height:52px;border-radius:14px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:24px;flex-shrink:0;
+  }
+  .album-info{flex:1;min-width:0;}
+  .album-name{font-size:15px;font-weight:700;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .album-count{font-size:12px;color:#888;margin-top:2px;font-weight:500;}
+  .album-arrow{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
+
+  /* ── ALBUM ── */
+  #screen-album{min-height:100vh;background:#F8F9FA;display:none;}
+  .album-header{
+    background:#fff;padding:16px 16px 12px;
+    border-bottom:1px solid #f0f0f0;
+    position:sticky;top:0;z-index:10;
+  }
+  .album-header-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .back-btn{
+    background:#f5f5f5;border:none;border-radius:10px;
+    width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;color:#333;flex-shrink:0;
+  }
+  .album-title-wrap{flex:1;}
+  .album-title{font-size:16px;font-weight:800;color:#1a1a2e;}
+  .album-subtitle{font-size:12px;color:#888;font-weight:500;}
+  .action-bar{display:flex;gap:8px;}
+  .action-btn{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+    padding:9px 12px;border:none;border-radius:12px;cursor:pointer;
+    font-size:13px;font-weight:700;font-family:inherit;
+  }
+  .btn-select-all{background:#f0f2ff;color:#1a237e;}
+  .btn-select-all.active{background:#1a237e;color:#fff;}
+  .btn-upload{background:#f0faf4;color:#2E7D32;}
+  .btn-price{background:#fff8f0;color:#E65100;}
+
+  .upload-progress{margin:12px 16px 0;background:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:none;}
+  .upload-progress-label{font-size:13px;font-weight:600;color:#1a237e;margin-bottom:8px;}
+  .progress-track{height:6px;background:#e8eaf6;border-radius:3px;overflow:hidden;}
+  .progress-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,#1a237e,#3949ab);width:0%;transition:width .3s;}
+
+  .images-grid-wrap{padding:12px;}
+  .images-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .img-card{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;}
+  .img-card img.thumb{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer;transition:opacity .2s;}
+  .img-overlay{position:absolute;inset:0;cursor:pointer;}
+  .img-checkbox{
+    position:absolute;top:6px;left:6px;width:26px;height:26px;border-radius:8px;
+    background:rgba(255,255,255,.85);border:2px solid rgba(255,255,255,.6);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    color:#fff;backdrop-filter:blur(4px);transition:all .15s;
+  }
+  .img-checkbox.checked{background:#1a237e;border-color:#1a237e;}
+  .img-del-btn{
+    position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:8px;
+    background:rgba(255,255,255,.85);border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;color:#c62828;
+    backdrop-filter:blur(4px);
+  }
+  .empty-state{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:60px 0;gap:12px;color:#bbb;
+  }
+  .empty-state p{font-size:14px;font-weight:600;}
+  .empty-state span{font-size:12px;}
+
+  /* Share button */
+  #share-btn-wrap{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    z-index:20;animation:slideUp .3s both;display:none;
+  }
+  #share-btn{
+    display:flex;align-items:center;gap:10px;padding:14px 28px;
+    background:linear-gradient(135deg,#0288d1 0%,#006db3 100%);
+    color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:800;
+    cursor:pointer;box-shadow:0 6px 24px rgba(2,136,209,.45);
+    letter-spacing:.3px;white-space:nowrap;font-family:inherit;
+  }
+  #share-btn:disabled{background:#aaa;cursor:not-allowed;}
+
+  /* ── LIGHTBOX ── */
+  #screen-lightbox{
+    position:fixed;inset:0;background:rgba(0,0,0,.95);
+    z-index:50;display:none;flex-direction:column;animation:fadeIn .2s both;
+  }
+  .lb-header{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 8px;}
+  .lb-close-btn,.lb-check-btn{
+    background:rgba(255,255,255,.12);border:none;border-radius:10px;
+    width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+    color:#fff;cursor:pointer;
+  }
+  .lb-check-btn.checked{background:#1a237e;}
+  .lb-counter{color:rgba(255,255,255,.7);font-size:13px;font-weight:600;}
+  .lb-main{flex:1;display:flex;align-items:center;justify-content:center;padding:0 8px;overflow:hidden;}
+  .lb-main img{max-width:100%;max-height:75vh;border-radius:16px;object-fit:contain;}
+  .lb-strip{display:flex;gap:8px;padding:12px 16px 32px;overflow-x:auto;}
+  .lb-strip img{width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;cursor:pointer;border:2.5px solid transparent;opacity:.55;transition:all .15s;}
+  .lb-strip img.active{border-color:#4fc3f7;opacity:1;}
+
+  /* ── PRICE MODAL ── */
+  #modal-price{
+    position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;
+    display:none;align-items:flex-end;animation:fadeIn .2s both;
+  }
+  .modal-inner{
+    background:#fff;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;
+    animation:slideUp .3s both;
+  }
+  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .modal-title{font-size:16px;font-weight:800;color:#1a1a2e;}
+  .modal-close{background:#f5f5f5;border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .modal-hint{font-size:12px;color:#888;margin-bottom:8px;font-weight:500;}
+  #price-textarea{
+    width:100%;border-radius:14px;border:1.5px solid #e0e0f0;padding:12px 14px;
+    font-size:14px;font-family:inherit;color:#1a1a2e;line-height:1.6;
+    resize:vertical;outline:none;background:#fafafa;
+  }
+  #save-price-btn{
+    width:100%;margin-top:12px;padding:14px;
+    background:linear-gradient(135deg,#1a237e,#3949ab);
+    color:#fff;border:none;border-radius:14px;
+    font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.3px;font-family:inherit;
+  }
+
+  /* ── TOAST ── */
+  #toast{
+    position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
+    color:#fff;padding:10px 20px;border-radius:50px;
+    font-size:13px;font-weight:700;z-index:100;white-space:nowrap;
+    box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toastIn .3s both;display:none;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HOME SCREEN ═══════════════ -->
+<div id="screen-home">
+  <div class="home-header">
+    <div class="circle1"></div>
+    <div class="circle2"></div>
+    <div style="position:relative;">
+      <div class="badge"><span>⬡</span> ẢNH GẠCH MASTER</div>
+      <h1>Album Gạch</h1>
+      <p>Chọn loại gạch để xem &amp; chia sẻ báo giá</p>
+    </div>
+  </div>
+  <div class="album-grid" id="album-grid"></div>
+</div>
+
+<!-- ═══════════════ ALBUM SCREEN ═══════════════ -->
+<div id="screen-album">
+  <div class="album-header">
+    <div class="album-header-top">
+      <button class="back-btn" onclick="goHome()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="album-title-wrap">
+        <div class="album-title" id="album-title-text">—</div>
+        <div class="album-subtitle" id="album-subtitle-text">0 ảnh • 0 đã chọn</div>
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="action-btn btn-select-all" id="btn-select-all" onclick="selectAll()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span id="select-all-label">Chọn tất</span>
+      </button>
+      <button class="action-btn btn-upload" onclick="document.getElementById('file-input').click()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        Tải lên
+      </button>
+      <button class="action-btn btn-price" onclick="openPriceModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        Giá
+      </button>
+    </div>
+  </div>
+
+  <input id="file-input" type="file" accept="image/*" multiple style="display:none" onchange="handleUpload(this.files)">
+
+  <div class="upload-progress" id="upload-progress">
+    <div class="upload-progress-label" id="upload-label">Đang tải lên... 0%</div>
+    <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+  </div>
+
+  <div class="images-grid-wrap">
+    <div id="images-container"></div>
+  </div>
+
+  <div id="share-btn-wrap">
+    <button id="share-btn" class="btn-ripple" onclick="handleShare()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <span id="share-label">Gửi Zalo (0 ảnh)</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════ LIGHTBOX ═══════════════ -->
+<div id="screen-lightbox">
+  <div class="lb-header">
+    <button class="lb-close-btn" onclick="closeLightbox()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <span class="lb-counter" id="lb-counter">1 / 1</span>
+    <button class="lb-check-btn" id="lb-check-btn" onclick="toggleSelectCurrent()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    </button>
+  </div>
+  <div class="lb-main">
+    <img id="lb-main-img" src="" alt="">
+  </div>
+  <div class="lb-strip" id="lb-strip"></div>
+</div>
+
+<!-- ═══════════════ PRICE MODAL ═══════════════ -->
+<div id="modal-price">
+  <div class="modal-inner">
+    <div class="modal-header">
+      <div class="modal-title">Chỉnh báo giá</div>
+      <button class="modal-close" onclick="closePriceModal()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-hint">Văn bản này sẽ gửi kèm ảnh qua Zalo:</div>
+    <textarea id="price-textarea" rows="6"></textarea>
+    <button id="save-price-btn" onclick="savePriceText()">Lưu báo giá</button>
+  </div>
+</div>
+
+<!-- ═══════════════ TOAST ═══════════════ -->
+<div id="toast"></div>
+
+<!-- ═══════════════ FIREBASE + APP LOGIC ═══════════════ -->
+<script type="module">
+// ── Firebase ──────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, listAll, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import { getDatabase, ref as dbRef, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBK91vTNIuEiofVy8QD3eAAbXoWYzN6_k8",
+  authDomain: "multi-p128-fcb23.firebaseapp.com",
+  databaseURL: "https://multi-p128-fcb23-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "multi-p128-fcb23",
+  storageBucket: "multi-p128-fcb23.firebasestorage.app",
+  messagingSenderId: "130973726632",
+  appId: "1:130973726632:web:8e22ee1b20ee61e2ea8f9d"
+};
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+const db = getDatabase(app);
+
+// ── Albums ────────────────────────────────────────────
+const DEFAULT_ALBUMS = [
+  { id:"san-vuon",       name:"Sân Vườn Hoàng Gia",  icon:"🌿", color:"#2E7D32", defaultPrice:"Gạch Sân Vườn Hoàng Gia\nGiá nhận kho: 106k/m²\nGiao CH hoặc ra chành: +5k/m²\nDạ e gửi ạ." },
+  { id:"op-3060-pak",    name:"Ốp 30×60 PAK",         icon:"🟦", color:"#1565C0", defaultPrice:"Gạch Ốp 30×60 PAK\nGiá nhận kho: 95k/m²\nGiao CH hoặc ra chành: +5k/m²\nDạ e gửi ạ." },
+  { id:"op-3060-hg",     name:"Ốp 30×60 Hoàng Gia",  icon:"👑", color:"#6A1B9A", defaultPrice:"Gạch Ốp 30×60 Hoàng Gia\nGiá nhận kho: 98k/m²\nGiao CH hoặc ra chành: +5k/m²\nDạ e gửi ạ." },
+  { id:"op-4080-pak",    name:"Ốp 40×80 PAK",         icon:"🟪", color:"#283593", defaultPrice:"Gạch Ốp 40×80 PAK\nGiá nhận kho: 115k/m²\nGiao CH hoặc ra chành: +5k/m²\nDạ e gửi ạ." },
+  { id:"nen-6060-pak",   name:"Nền 60×60 Men PAK",    icon:"⬜", color:"#00838F", defaultPrice:"Gạch Nền 60×60 Men PAK\nGiá nhận kho: 120k/m²\nGiao CH hoặc ra chành: +5k/m²\nDạ e gửi ạ." },
+  { id:"nen-6060-pancera",name:"Nền 60×60 Pancera",   icon:"🔲", color:"#558B2F", defaultPrice:"Gạch Nền 60×60 Pancera\nGiá nhận kho: 135k/m²\nGiao CH hoặc ra chành: +5k/m²\nDạ e gửi ạ." },
+  { id:"nen-6060-vicenza",name:"Nền 60×60 Vicenza",   icon:"🇮🇹", color:"#E65100", defaultPrice:"Gạch Nền 60×60 Vicenza\nGiá nhận kho: 145k/m²\nGiao CH hoặc ra chành: +5k/m²\nDạ e gửi ạ." },
+  { id:"nen-6060-vidona", name:"Nền 60×60 Vidona",    icon:"🔷", color:"#37474F", defaultPrice:"Gạch Nền 60×60 Vidona\nGiá nhận kho: 130k/m²\nGiao CH hoặc ra chành: +5k/m²\nDạ e gửi ạ." },
+  { id:"nen-8080-vidona", name:"Nền 80×80 Vidona",    icon:"⬛", color:"#4A148C", defaultPrice:"Gạch Nền 80×80 Vidona\nGiá nhận kho: 155k/m²\nGiao CH hoặc ra chành: +5k/m²\nDạ e gửi ạ." },
+];
+
+// ── State ─────────────────────────────────────────────
+let albums = DEFAULT_ALBUMS.map(a => ({...a, priceText: a.defaultPrice}));
+let currentAlbum = null;
+let imagesMap = {};   // { albumId: [{name, url, path}] }
+let selected = [];
+let lightboxIdx = 0;
+let sharing = false;
+let toastTimer = null;
+
+// ── Expose to global scope for onclick handlers ───────
+window.goHome = goHome;
+window.selectAll = selectAll;
+window.handleUpload = handleUpload;
+window.openPriceModal = openPriceModal;
+window.closePriceModal = closePriceModal;
+window.savePriceText = savePriceText;
+window.handleShare = handleShare;
+window.closeLightbox = closeLightbox;
+window.toggleSelectCurrent = toggleSelectCurrent;
+
+// ── Firebase: load album price texts ─────────────────
+onValue(dbRef(db, "albums"), snapshot => {
+  const data = snapshot.val();
+  if (data) {
+    albums = albums.map(a => ({
+      ...a,
+      priceText: data[a.id]?.priceText ?? a.defaultPrice
+    }));
+    // update currentAlbum if open
+    if (currentAlbum) {
+      const updated = albums.find(a => a.id === currentAlbum.id);
+      if (updated) currentAlbum = {...currentAlbum, priceText: updated.priceText};
+    }
+  }
+  renderHome();
+});
+
+// ── Render Home ───────────────────────────────────────
+function renderHome() {
+  const grid = document.getElementById('album-grid');
+  grid.innerHTML = albums.map((album, i) => `
+    <button class="album-btn" onclick="openAlbum('${album.id}')"
+      style="animation:slideUp .3s ${i*0.05}s both;">
+      <div class="album-icon"
+        style="background:${album.color}18;border:1.5px solid ${album.color}28;">
+        ${album.icon}
+      </div>
+      <div class="album-info">
+        <div class="album-name">${album.name}</div>
+        <div class="album-count" id="count-${album.id}">
+          ${imagesMap[album.id] ? imagesMap[album.id].length + ' ảnh' : 'Nhấn để xem'}
+        </div>
+      </div>
+      <div class="album-arrow" style="background:${album.color}12;color:${album.color};">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </button>
+  `).join('');
+}
+window.openAlbum = openAlbum;
+
+function openAlbum(id) {
+  currentAlbum = albums.find(a => a.id === id);
+  if (!currentAlbum) return;
+  selected = [];
+  showScreen('album');
+  document.getElementById('album-title-text').textContent = currentAlbum.name;
+  updateSubtitle();
+  updateShareBtn();
+  loadImages(id);
+}
+
+function goHome() {
+  showScreen('home');
+  currentAlbum = null;
+  selected = [];
+}
+
+// ── Screen management ─────────────────────────────────
+function showScreen(name) {
+  document.getElementById('screen-home').style.display   = name==='home'   ? '' : 'none';
+  document.getElementById('screen-album').style.display  = name==='album'  ? '' : 'none';
+  const lb = document.getElementById('screen-lightbox');
+  lb.style.display = name==='lightbox' ? 'flex' : 'none';
+}
+
+// ── Load images ───────────────────────────────────────
+async function loadImages(albumId) {
+  const container = document.getElementById('images-container');
+  container.innerHTML = `<div class="empty-state"><div class="spinner"></div><p style="color:#999;">Đang tải ảnh...</p></div>`;
+  try {
+    const folderRef = ref(storage, `albums/${albumId}`);
+    const result = await listAll(folderRef);
+    const urls = await Promise.all(result.items.map(async item => ({
+      name: item.name,
+      url: await getDownloadURL(item),
+      path: item.fullPath,
+    })));
+    imagesMap[albumId] = urls;
+    // update count on home
+    const countEl = document.getElementById('count-' + albumId);
+    if (countEl) countEl.textContent = urls.length + ' ảnh';
+  } catch(e) {
+    imagesMap[albumId] = [];
+  }
+  updateSubtitle();
+  renderImages();
+}
+
+function renderImages() {
+  if (!currentAlbum) return;
+  const imgs = imagesMap[currentAlbum.id] || [];
+  const container = document.getElementById('images-container');
+  if (imgs.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <p>Chưa có ảnh nào</p>
+        <span>Bấm "Tải lên" để thêm ảnh</span>
+      </div>`;
+    return;
+  }
+  container.innerHTML = `<div class="images-grid">${imgs.map((img, idx) => {
+    const isSel = selected.includes(img.url);
+    return `
+      <div class="img-card" data-idx="${idx}">
+        <img class="thumb" src="${img.url}" alt="${img.name}"
+          onclick="openLightbox(${idx})"
+          style="opacity:${isSel?'.75':'1'};">
+        <div class="img-overlay" onclick="toggleSelect('${img.url}', this)"
+          style="background:${isSel?'rgba(26,35,126,.25)':'transparent'}"></div>
+        <div class="img-checkbox ${isSel?'checked':''}" onclick="toggleSelect('${img.url}', this)">
+          ${isSel?`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`:''}
+        </div>
+        <button class="img-del-btn" onclick="handleDelete('${img.path}')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+        </button>
+      </div>`;
+  }).join('')}</div>`;
+}
+window.openLightbox = openLightbox;
+window.toggleSelect = toggleSelect;
+window.handleDelete = handleDelete;
+
+function toggleSelect(url) {
+  if (selected.includes(url)) selected = selected.filter(u => u !== url);
+  else selected.push(url);
+  updateSubtitle();
+  updateShareBtn();
+  renderImages();
+  updateSelectAllBtn();
+}
+
+function updateSubtitle() {
+  const imgs = currentAlbum ? (imagesMap[currentAlbum.id] || []) : [];
+  document.getElementById('album-subtitle-text').textContent =
+    `${imgs.length} ảnh • ${selected.length} đã chọn`;
+}
+
+function updateShareBtn() {
+  const wrap = document.getElementById('share-btn-wrap');
+  wrap.style.display = selected.length > 0 ? 'block' : 'none';
+  document.getElementById('share-label').textContent =
+    `Gửi Zalo (${selected.length} ảnh)`;
+}
+
+function updateSelectAllBtn() {
+  const imgs = currentAlbum ? (imagesMap[currentAlbum.id] || []) : [];
+  const allSel = imgs.length > 0 && selected.length === imgs.length;
+  const btn = document.getElementById('btn-select-all');
+  const lbl = document.getElementById('select-all-label');
+  btn.className = 'action-btn btn-select-all' + (allSel ? ' active' : '');
+  lbl.textContent = allSel ? 'Bỏ chọn' : 'Chọn tất';
+}
+
+function selectAll() {
+  const imgs = currentAlbum ? (imagesMap[currentAlbum.id] || []) : [];
+  const allSel = imgs.length > 0 && selected.length === imgs.length;
+  selected = allSel ? [] : imgs.map(i => i.url);
+  updateSubtitle();
+  updateShareBtn();
+  renderImages();
+  updateSelectAllBtn();
+}
+
+// ── Upload ────────────────────────────────────────────
+async function handleUpload(files) {
+  if (!files.length || !currentAlbum) return;
+  const progressEl = document.getElementById('upload-progress');
+  const labelEl = document.getElementById('upload-label');
+  const barEl = document.getElementById('progress-bar');
+  progressEl.style.display = 'block';
+  const total = files.length;
+  let done = 0;
+  for (const file of files) {
+    const storageRef = ref(storage, `albums/${currentAlbum.id}/${Date.now()}_${file.name}`);
+    await uploadBytes(storageRef, file);
+    done++;
+    const pct = Math.round((done/total)*100);
+    labelEl.textContent = `Đang tải lên... ${pct}%`;
+    barEl.style.width = pct + '%';
+  }
+  progressEl.style.display = 'none';
+  barEl.style.width = '0%';
+  showToast(`Đã tải lên ${total} ảnh!`);
+  await loadImages(currentAlbum.id);
+}
+
+// ── Delete ────────────────────────────────────────────
+async function handleDelete(imgPath) {
+  if (!confirm('Xóa ảnh này?')) return;
+  try {
+    await deleteObject(ref(storage, imgPath));
+    const id = currentAlbum.id;
+    imagesMap[id] = imagesMap[id].filter(i => i.path !== imgPath);
+    selected = selected.filter(u => {
+      const img = (imagesMap[id]||[]).find(i => i.path === imgPath);
+      return u !== img?.url;
+    });
+    updateSubtitle();
+    updateShareBtn();
+    renderImages();
+    updateSelectAllBtn();
+    showToast('Đã xóa ảnh.');
+  } catch(e) {
+    showToast('Lỗi xóa ảnh!', 'error');
+  }
+}
+
+// ── Share ─────────────────────────────────────────────
+async function handleShare() {
+  if (!selected.length) { showToast('Chọn ít nhất 1 ảnh!', 'error'); return; }
+  if (sharing) return;
+  sharing = true;
+  const btn = document.getElementById('share-btn');
+  btn.disabled = true;
+  document.getElementById('share-label').textContent = 'Đang chuẩn bị...';
+  try {
+    const txt = currentAlbum.priceText ?? currentAlbum.defaultPrice;
+    const files = [];
+    for (const url of selected) {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const ext = blob.type.split('/')[1] || 'jpg';
+      files.push(new File([blob], `gach_${Date.now()}.${ext}`, {type: blob.type}));
+    }
+    if (navigator.share && navigator.canShare({files})) {
+      await navigator.share({text: txt, files});
+    } else {
+      await navigator.clipboard.writeText(txt);
+      showToast('Đã copy báo giá! Mở Zalo và dán vào.', 'info');
+    }
+  } catch(e) {
+    if (e.name !== 'AbortError') showToast('Lỗi chia sẻ: ' + e.message, 'error');
+  }
+  sharing = false;
+  btn.disabled = false;
+  document.getElementById('share-label').textContent = `Gửi Zalo (${selected.length} ảnh)`;
+}
+
+// ── Lightbox ──────────────────────────────────────────
+function openLightbox(idx) {
+  lightboxIdx = idx;
+  showScreen('lightbox');
+  renderLightbox();
+}
+
+function renderLightbox() {
+  const imgs = currentAlbum ? (imagesMap[currentAlbum.id] || []) : [];
+  if (!imgs.length) return;
+  const img = imgs[lightboxIdx];
+  document.getElementById('lb-main-img').src = img.url;
+  document.getElementById('lb-counter').textContent = `${lightboxIdx+1} / ${imgs.length}`;
+  const checkBtn = document.getElementById('lb-check-btn');
+  checkBtn.className = 'lb-check-btn' + (selected.includes(img.url) ? ' checked' : '');
+  // strip
+  const strip = document.getElementById('lb-strip');
+  strip.innerHTML = imgs.map((im, i) => `
+    <img src="${im.url}" onclick="lbGoTo(${i})" class="${i===lightboxIdx?'active':''}">`
+  ).join('');
+}
+window.lbGoTo = function(i) { lightboxIdx = i; renderLightbox(); };
+
+function closeLightbox() { showScreen('album'); }
+
+function toggleSelectCurrent() {
+  const imgs = currentAlbum ? (imagesMap[currentAlbum.id] || []) : [];
+  const url = imgs[lightboxIdx]?.url;
+  if (!url) return;
+  if (selected.includes(url)) selected = selected.filter(u => u !== url);
+  else selected.push(url);
+  updateSubtitle();
+  updateShareBtn();
+  renderLightbox();
+}
+
+// ── Price modal ───────────────────────────────────────
+function openPriceModal() {
+  document.getElementById('price-textarea').value =
+    currentAlbum.priceText ?? currentAlbum.defaultPrice;
+  document.getElementById('modal-price').style.display = 'flex';
+}
+function closePriceModal() {
+  document.getElementById('modal-price').style.display = 'none';
+}
+async function savePriceText() {
+  if (!currentAlbum) return;
+  const txt = document.getElementById('price-textarea').value;
+  await set(dbRef(db, `albums/${currentAlbum.id}/priceText`), txt);
+  currentAlbum.priceText = txt;
+  albums = albums.map(a => a.id === currentAlbum.id ? {...a, priceText: txt} : a);
+  closePriceModal();
+  showToast('Đã lưu báo giá!');
+}
+
+// ── Toast ─────────────────────────────────────────────
+function showToast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type==='error' ? '#c62828' : type==='info' ? '#0277bd' : '#2E7D32';
+  el.style.display = 'block';
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+// ── Init ──────────────────────────────────────────────
+renderHome();
+showScreen('home');
+</script>
+</body>
+</html>
